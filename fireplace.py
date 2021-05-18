@@ -96,10 +96,11 @@ def generate_pixel_color(bound_delta: float) -> Tuple[int]:
     # possible pixel colors
     colors = deque([(251, 237, 83),(248, 221, 78), 
                     (246, 201, 73), (244, 183, 68), (255, 159, 56), (241, 146, 63)])
-    
+    weights = deque([50, 25, 15, 10, 0, 0])
+
     # change probabilities depending on distance to the upper bound
     colors.rotate((int(bound_delta) + 1) // 2)
-    return random.choices(colors, weights=[50, 25, 15, 10, 0, 0])[0]
+    return random.choices(colors, weights=weights)[0]
     # return random.choices(colors, weights=[100, 0, 0, 0, 0, 0])[0]
 
 
@@ -120,11 +121,15 @@ if __name__ == '__main__':
     for i in range(500):
         fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
         fireplace_frame, ember_locations = generate_fireplace_frame(fireplace_matrix, ember_locations)
+        
         # Convert the pixels into an array using numpy
         array = np.array(fireplace_frame[::-1], dtype=np.uint8)
 
         # Use PIL to create an image from the new array of pixels
         new_image = Image.fromarray(array)
+        # Scale image up to something bigger
+        # TODO: can do this more efficiently? 
+        new_image = new_image.resize((250,180), Image.BOX)
         new_image.save('image_samples/{}.png'.format(i))
 
     # generate gif for testing purposes
