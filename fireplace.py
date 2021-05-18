@@ -67,7 +67,7 @@ def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int
 def generate_pixel_color(bound_delta: float) -> Tuple[int]:
     # possible pixel colors
     colors = deque([(251, 237, 83),(248, 221, 78), 
-                    (246, 201, 73), (244, 183, 68), (241, 160, 63), (194, 84, 35)])
+                    (246, 201, 73), (244, 183, 68), (255, 159, 56), (241, 146, 63)])
     
     colors.rotate(int(bound_delta) // 2)
     return random.choices(colors, weights=[45, 25, 15, 10, 5, 0])[0]
