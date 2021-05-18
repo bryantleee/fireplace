@@ -69,8 +69,10 @@ def generate_pixel_color(bound_delta: float) -> Tuple[int]:
     colors = deque([(251, 237, 83),(248, 221, 78), 
                     (246, 201, 73), (244, 183, 68), (255, 159, 56), (241, 146, 63)])
     
-    colors.rotate(int(bound_delta) // 2)
-    return random.choices(colors, weights=[45, 25, 15, 10, 5, 0])[0]
+    colors.rotate((int(bound_delta) + 1) // 2)
+    return random.choices(colors, weights=[50, 25, 15, 10, 0, 0])[0]
+    # print(int(bound_delta), colors[0])
+    # return random.choices(colors, weights=[100, 0, 0, 0, 0, 0])[0]
     
 
 
