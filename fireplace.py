@@ -12,7 +12,7 @@ def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int
     
     Returns the a 18 x 24 list of list of 0's and 1's
     '''
-    pixel_states = {}
+    pixel_states = {j : 0 for j in range(len(fireplace_matrix[0]))}
 
     # formula to determine fire max height
     y = lambda x : -(1/15)*((x - 12)**2) + 12
@@ -33,7 +33,7 @@ def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int
         1 : .40,
         0 : .45
     }
-
+    
     for i, row in enumerate(fireplace_matrix):
         for j, pixel in enumerate(row):
             
@@ -44,7 +44,8 @@ def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int
 
             if bound_delta > 0:
                 # Determine whether to kill using death chances
-                to_kill = random.random() < death_chance[int(bound_delta)]
+                modifier = 0.1 if pixel_states.get(j - 1) == 2 else 0
+                to_kill = random.random() < death_chance[int(bound_delta)] + modifier
                 
                 # Pixel is valid under certain conditions
                 if i <= bound and not to_kill and pixel_states.get(j) != 2:
