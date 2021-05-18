@@ -1,9 +1,12 @@
 import random
 from typing import List, Tuple, Dict
 from collections import deque
-
 from PIL import Image
+import glob
+
 import numpy as np
+import imageio
+
 
 def generate_fireplace_frame(fireplace_matrix: List[List[Tuple[int]]], ember_locations: Dict) -> List[List[Tuple[int]]]:
     '''
@@ -100,11 +103,21 @@ def generate_pixel_color(bound_delta: float) -> Tuple[int]:
     # return random.choices(colors, weights=[100, 0, 0, 0, 0, 0])[0]
 
 
+def generate_gif():
+    # filenames = glob.glob('image_samples/*.png')
+    images = []
+
+    filenames = [i for i in range(500)]
+    for filename in sorted(filenames):
+        images.append(imageio.imread('image_samples/{}.png'.format(filename)))
+    imageio.mimsave('image_samples/fireplace.gif', images, duration=0.1)
+
+
 if __name__ == '__main__':
     fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
     ember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
     
-    for i in range(25):
+    for i in range(500):
         fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
         fireplace_frame, ember_locations = generate_fireplace_frame(fireplace_matrix, ember_locations)
         # Convert the pixels into an array using numpy
@@ -113,3 +126,6 @@ if __name__ == '__main__':
         # Use PIL to create an image from the new array of pixels
         new_image = Image.fromarray(array)
         new_image.save('image_samples/{}.png'.format(i))
+
+    # generate gif for testing purposes
+    generate_gif()
