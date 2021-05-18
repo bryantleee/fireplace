@@ -47,8 +47,10 @@ def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int
                 modifier = 0.1 if pixel_states.get(j - 1) == 2 else 0
                 to_kill = random.random() < death_chance[int(bound_delta)] + modifier
                 
+                to_flicker = random.random() < 0.02
+
                 # Pixel is valid under certain conditions
-                if i <= bound and not to_kill and pixel_states.get(j) != 2:
+                if i <= bound and not to_kill and pixel_states.get(j) != 2 and not to_flicker:
                     fireplace_matrix[i][j] = generate_pixel_color(bound_delta)
                 
                 # only allow for one-pixel wide fire gaps
