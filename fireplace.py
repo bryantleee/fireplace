@@ -1,6 +1,9 @@
 import random
-from typing import List
+from typing import List, Tuple
+from collections import deque
 
+from PIL import Image
+import numpy as np
 
 def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int]]:
     '''
@@ -58,24 +61,27 @@ def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int
     return fireplace_matrix
 
 
-def generate_pixel_color(bound_delta):
+
+
+def generate_pixel_color(bound_delta: float) -> Tuple[int]:
     # possible pixel colors
-    colors = [(251, 237, 83),(248, 221, 78), (246, 201, 73), (244, 183, 68), (241, 160, 63)]
-    #         # [30, 25, 15, 15, 10, 5]
-    # bound_delta = int(bound_delta)
-    return random.choice(colors)
-
-
-
-def inverse_print(fireplace_matrix: List[List[int]]) -> List[List[int]]:
-    '''
-    Prints by inverting the rows upside-down, for easier visualization
-    '''
-    for row in reversed(fireplace_matrix):
-        print(row)
+    colors = deque([(251, 237, 83),(248, 221, 78), 
+                    (246, 201, 73), (244, 183, 68), (241, 160, 63), (194, 84, 35)])
+    
+    colors.rotate(int(bound_delta) // 2)
+    return random.choices(colors, weights=[45, 25, 15, 10, 5, 0])[0]
+    
 
 
 if __name__ == '__main__':
-    fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
-    fireplace_frame = generate_fireplace_frame(fireplace_matrix)
-    inverse_print(fireplace_frame)
+    
+    for i in range(10):
+        fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
+        fireplace_frame = generate_fireplace_frame(fireplace_matrix)
+        
+    #   Convert the pixels into an array using numpy
+        array = np.array(fireplace_frame[::-1], dtype=np.uint8)
+
+        # Use PIL to create an image from the new array of pixels
+        new_image = Image.fromarray(array)
+        new_image.save('image_samples/{}.png'.format(i))
