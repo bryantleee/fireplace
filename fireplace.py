@@ -37,13 +37,15 @@ def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int
             # max pixel height
             bound = y(j)
             
-            if bound - i > 0:
+            bound_delta = bound - i
+
+            if bound_delta > 0:
                 # Determine whether to kill using death chances
-                to_kill = random.random() < death_chance[int(bound - i)]
+                to_kill = random.random() < death_chance[int(bound_delta)]
                 
                 # Pixel is valid under certain conditions
                 if i <= bound and not to_kill and pixel_states.get(j) != 2:
-                    fireplace_matrix[i][j] = 1
+                    fireplace_matrix[i][j] = generate_pixel_color(bound_delta)
                 
                 # only allow for one-pixel wide fire gaps
                 if pixel_states.get(j) == 1:
@@ -56,6 +58,15 @@ def generate_fireplace_frame(fireplace_matrix: List[List[int]]) -> List[List[int
     return fireplace_matrix
 
 
+def generate_pixel_color(bound_delta):
+    # possible pixel colors
+    colors = [(251, 237, 83),(248, 221, 78), (246, 201, 73), (244, 183, 68), (241, 160, 63)]
+    #         # [30, 25, 15, 15, 10, 5]
+    # bound_delta = int(bound_delta)
+    return random.choice(colors)
+
+
+
 def inverse_print(fireplace_matrix: List[List[int]]) -> List[List[int]]:
     '''
     Prints by inverting the rows upside-down, for easier visualization
@@ -65,6 +76,6 @@ def inverse_print(fireplace_matrix: List[List[int]]) -> List[List[int]]:
 
 
 if __name__ == '__main__':
-    fireplace_matrix = [[0 for i in range(25)] for i in range(18)]
+    fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
     fireplace_frame = generate_fireplace_frame(fireplace_matrix)
     inverse_print(fireplace_frame)
