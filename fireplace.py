@@ -5,7 +5,7 @@ from collections import deque
 from PIL import Image
 import numpy as np
 
-def generate_fireplace_frame(fireplace_matrix: List[List[Tuple(int)]]) -> List[List[Tuple(int)]]:
+def generate_fireplace_frame(fireplace_matrix: List[List[Tuple[int]]]) -> List[List[Tuple[int]]]:
     '''
     Generates a single frame of a fireplace, with each Tuple's representing an RGB pixel color
         - fireplace_matrix: 18 x 24 list of list of 0's
