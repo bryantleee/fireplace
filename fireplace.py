@@ -9,18 +9,6 @@ import numpy as np
 import imageio
 
 
-class FireplaceIterator:
-    def __init__(self, fireplace):
-        self.fireplace = fireplace
-        fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
-        self.ember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
-
-    def __next__(self):
-        fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
-        fireplace_frame, self.ember_locations = self.fireplace.generate_fireplace_frame(fireplace_matrix, self.ember_locations)
-        return self.fireplace.generate_frame_image(fireplace_frame)
-
-
 class Fireplace:    
     def generate_fireplace_frame(self, fireplace_matrix: List[List[Tuple[int]]], ember_locations: Dict) -> List[List[Tuple[int]]]:
         '''
@@ -125,5 +113,21 @@ class Fireplace:
         new_image = Image.fromarray(array)
         return new_image.resize((500, 360), Image.BOX)
 
+
     def __iter__(self):
+        '''
+        Iterator to easily access future frames in the image
+        '''
         return FireplaceIterator(self)
+
+
+class FireplaceIterator:
+    def __init__(self, fireplace: Fireplace):
+        self.fireplace = fireplace
+        fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
+        self.ember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
+
+    def __next__(self):
+        fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
+        fireplace_frame, self.ember_locations = self.fireplace.generate_fireplace_frame(fireplace_matrix, self.ember_locations)
+        return self.fireplace.generate_frame_image(fireplace_frame)

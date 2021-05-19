@@ -1,12 +1,12 @@
+#!/usr/bin/env python
 import tkinter as tk
 from PIL import ImageTk, Image
 
 import fireplace
 
-
 win = tk.Tk()
 win.geometry('500x360')  
-win.resizable(0, 0)  # fix window
+win.resizable(0, 0)
 
 panel = tk.Label(win)
 panel.pack()
