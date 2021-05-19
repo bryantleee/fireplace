@@ -3,6 +3,9 @@ import random
 from typing import List, Tuple, Dict
 from collections import deque
 from PIL import Image
+
+import cv2
+
 import glob
 
 import numpy as np
@@ -110,8 +113,9 @@ class Fireplace:
         Generate image
         '''    
         array = np.array(fireplace_frame[::-1], dtype=np.uint8)
-        new_image = Image.fromarray(array)
-        return new_image.resize((500, 360), Image.BOX)
+        # new_image = Image.fromarray(array)
+        resized = cv2.resize(array, (500, 360), interpolation=cv2.INTER_AREA)
+        return Image.fromarray(resized)
 
 
     def __iter__(self):
