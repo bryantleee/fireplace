@@ -129,7 +129,7 @@ if __name__ == '__main__':
         new_image = Image.fromarray(array)
         # Scale image up to something bigger
         # TODO: can do this more efficiently? 
-        new_image = new_image.resize((250,180), Image.BOX)
+        new_image = new_image.resize((500, 360), Image.BOX)
         new_image.save('image_samples/{}.png'.format(i))
 
     # generate gif for testing purposes
