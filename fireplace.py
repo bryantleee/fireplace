@@ -13,7 +13,7 @@ import imageio
 
 
 class Fireplace:    
-    def generate_fireplace_frame(self, fireplace_matrix: List[List[Tuple[int]]], ember_locations: Dict) -> List[List[Tuple[int]]]:
+    def generate_fireplace_frame(self, fireplace_matrix: List[List[Tuple[int]]], ember_locations: Dict, blember_locations: Dict) -> List[List[Tuple[int]]]:
         '''
         Generates a single frame of a fireplace, with each Tuple's representing an RGB pixel color
             - fireplace_matrix: 18 x 24 list of list of 0's
@@ -49,12 +49,22 @@ class Fireplace:
         for j in ember_locations:
             if ember_locations[j] >= 0:
                 ember_locations[j] += 1
-            if ember_locations[j] > len(fireplace_matrix):
-                ember_locations[j] = -1
+
+                if ember_locations[j] > len(fireplace_matrix):
+                    ember_locations[j] = -1
+
+            if blember_locations[j] >= 0:
+                blember_locations[j] += 1
+                
+                if blember_locations[j] > len(fireplace_matrix):
+                    ember_locations[j] = -1
         
         for i, row in enumerate((fireplace_matrix)):
             for j, pixel in enumerate(row):
                 
+                if i == 0 and random.random() < 0.02:
+                    blember_locations[j] = 0
+
                 # max pixel height
                 bound = y(j)
                 
@@ -69,7 +79,7 @@ class Fireplace:
                     to_flicker = random.random() < 0.02
 
                     # Pixel is valid under certain conditions
-                    if i <= bound and not to_kill and pixel_states.get(j) != 2 and not to_flicker:
+                    if i <= bound and not to_kill and pixel_states.get(j) != 2 and not to_flicker and not blember_locations[j] == i:
                         fireplace_matrix[i][j] = self.generate_pixel_color(bound_delta)
                     
                     # only allow for one-pixel wide fire gaps
@@ -87,7 +97,7 @@ class Fireplace:
 
                 if ember_locations[j] == i:
                     fireplace_matrix[i][j] = ember_color
-        return fireplace_matrix, ember_locations
+        return fireplace_matrix, ember_locations, blember_locations
 
     
     def generate_pixel_color(self, bound_delta: float) -> Tuple[int]:
@@ -130,8 +140,10 @@ class FireplaceIterator:
         self.fireplace = fireplace
         fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
         self.ember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
+        self.blember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
+
 
     def __next__(self):
         fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
-        fireplace_frame, self.ember_locations = self.fireplace.generate_fireplace_frame(fireplace_matrix, self.ember_locations)
+        fireplace_frame, self.ember_locations, self.blember_locations = self.fireplace.generate_fireplace_frame(fireplace_matrix, self.ember_locations, self.blember_locations)
         return self.fireplace.generate_frame_image(fireplace_frame)
