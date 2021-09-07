@@ -5,6 +5,7 @@ from PIL import ImageTk, Image
 import fireplace
 
 win = tk.Tk()
+win.title('fireplace')
 win.geometry('500x360')  
 win.resizable(0, 0)
 
@@ -20,8 +21,10 @@ def next_img():
     img = ImageTk.PhotoImage(img)
     panel.img = img  # keep a reference so it's not garbage collected
     panel['image'] = img
+    
     win.after(100, next_img)
 
+panel.config(image='')
 next_img()
 
 win.mainloop()
