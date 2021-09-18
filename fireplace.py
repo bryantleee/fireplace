@@ -13,9 +13,27 @@ import imageio
 
 
 class Fireplace:    
+    # there is a chance to the kill the fire column at each row, increases as you get closer to bound
+    def __init__(self):
+        self.death_chance = {
+                12 : 0,
+                11 : 0,
+                10 : 0,
+                9 : 0,
+                8 : 0,
+                7 : 0,
+                6 : 0,
+                5 : .20,
+                4 : .30,
+                3 : .35,
+                2 : .40,
+                1 : .40,
+                0 : .45
+        }
+
     def generate_fireplace_frame(self, fireplace_matrix: List[List[Tuple[int]]], 
-        ember_locations: Dict, blember_locations: Dict, palette=((251, 237, 83),(248, 221, 78), 
-                        (246, 201, 73), (244, 183, 68), (255, 159, 56), (241, 146, 63))) -> List[List[Tuple[int]]]:
+        ember_locations: Dict, blember_locations: Dict, palette: Tuple[Tuple[int]],
+        ember_color: Tuple[int]) -> List[List[Tuple[int]]]:
         '''
         Generates a single frame of a fireplace, with each Tuple's representing an RGB pixel color
             - fireplace_matrix: 18 x 24 list of list of 0's
@@ -23,29 +41,9 @@ class Fireplace:
         Returns the a 18 x 24 list of list of Tuples of RGB pixel colors
         '''
         pixel_states = {j : 0 for j in range(len(fireplace_matrix[0]))}
-
-        # Each column can have 1 ember on the screen max at a time
-        ember_color = (194, 84, 35)
         
         # formula to determine fire max height
         y = lambda x : -(1/15)*((x - 12)**2) + 12
-
-        # there is a chance to the kill the fire column at each row, increases as you get closer to bound
-        death_chance = {
-            12 : 0,
-            11 : 0,
-            10 : 0,
-            9 : 0,
-            8 : 0,
-            7 : 0,
-            6 : 0,
-            5 : .20,
-            4 : .30,
-            3 : .35,
-            2 : .40,
-            1 : .40,
-            0 : .45
-        }
 
         # move all embers up by one
         for j in ember_locations:
@@ -75,7 +73,7 @@ class Fireplace:
                 if bound_delta > 0:
                     # Determine whether to kill using death chances
                     modifier = 0.1 if pixel_states.get(j - 1) == 2 else 0
-                    to_kill = random.random() < death_chance[int(bound_delta)] + modifier
+                    to_kill = random.random() < self.death_chance[int(bound_delta)] + modifier
                     
                     # Each pixel has a chance of flickering (being black)
                     to_flicker = random.random() < 0.02
@@ -139,12 +137,30 @@ class Fireplace:
 class FireplaceIterator:
     def __init__(self, fireplace: Fireplace):
         self.fireplace = fireplace
+        self.is_fireplace_on = True
         fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
         self.ember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
         self.blember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
+        self.palette = ((251, 237, 83),(248, 221, 78), 
+                        (246, 201, 73), (244, 183, 68), (255, 159, 56), (241, 146, 63))
+        
+        # Each column can have 1 ember on the screen max at a time
+        self.ember_color = (194, 84, 35)
+
+
+        # self.palette = ((212, 253, 255),(179, 251, 255), 
+        #                 (148, 250, 255), (66, 246, 255), (35, 186, 194), (35, 125, 194))
 
 
     def __next__(self):
+        
         fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
-        fireplace_frame, self.ember_locations, self.blember_locations = self.fireplace.generate_fireplace_frame(fireplace_matrix, self.ember_locations, self.blember_locations)
-        return self.fireplace.generate_frame_image(fireplace_frame)
+        if self.is_fireplace_on:
+            fireplace_frame, self.ember_locations, self.blember_locations = self.fireplace.generate_fireplace_frame(fireplace_matrix, 
+                self.ember_locations, self.blember_locations, self.palette, self.ember_color)
+            return self.fireplace.generate_frame_image(fireplace_frame)
+        else:
+            
+            return self.fireplace.generate_frame_image(fireplace_matrix)
+            
+            

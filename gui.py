@@ -9,11 +9,16 @@ win.title('fireplace')
 win.geometry('500x360')  
 win.resizable(0, 0)
 
-panel = tk.Label(win)
-panel.pack()
-
 fp = fireplace.Fireplace()
 images = iter(fp)  
+
+def mouse_function(event):
+    images.is_fireplace_on = not images.is_fireplace_on
+
+win.bind("<Button-1>", mouse_function)
+
+panel = tk.Label(win)
+panel.pack()
 
 def next_img():    
     img = next(images)  # get the next image from the iterator
