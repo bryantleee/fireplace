@@ -1,67 +1,57 @@
-
 import random
 from typing import List, Tuple, Dict
 from collections import deque
 from PIL import Image
-
 import cv2
-
-import glob
-
 import numpy as np
-import imageio
 
-
-class Fireplace:    
+class Fireplace:
     def generate_fireplace_frame(self, fireplace_matrix: List[List[Tuple[int]]], 
         ember_locations: Dict, blember_locations: Dict, palette=((251, 237, 83),(248, 221, 78), 
                         (246, 201, 73), (244, 183, 68), (255, 159, 56), (241, 146, 63))) -> List[List[Tuple[int]]]:
         '''
-        Generates a single frame of a fireplace, with each Tuple's representing an RGB pixel color
-            - fireplace_matrix: 18 x 24 list of list of 0's
-        
-        Returns the a 18 x 24 list of list of Tuples of RGB pixel colors
+        Generates a single frame of a fireplace, with each Tuple representing an RGB pixel color
         '''
-        pixel_states = {j : 0 for j in range(len(fireplace_matrix[0]))}
+        rows = len(fireplace_matrix)
+        cols = len(fireplace_matrix[0])
+        pixel_states = {j: 0 for j in range(cols)}
 
         # Each column can have 1 ember on the screen max at a time
         ember_color = (194, 84, 35)
         
         # formula to determine fire max height
-        y = lambda x : -(1/15)*((x - 12)**2) + 12
+        y = lambda x: -1 / cols * ((x - (cols / 2)) ** 2) + (rows / 1.5)
 
-        # there is a chance to the kill the fire column at each row, increases as you get closer to bound
+        # minimum and maximum death chances
+        min_death_chance = 0.05
+        max_death_chance = 0.7
+
+        # threshold for zero death chance (e.g., top third of the fire)
+        zero_death_threshold = rows // 2
+
+        # there is a chance to kill the fire column at each row, increases as you get closer to bound
         death_chance = {
-            12 : 0,
-            11 : 0,
-            10 : 0,
-            9 : 0,
-            8 : 0,
-            7 : 0,
-            6 : 0,
-            5 : .20,
-            4 : .30,
-            3 : .35,
-            2 : .40,
-            1 : .40,
-            0 : .45
+            i: 0 if i > zero_death_threshold else abs(min_death_chance + (max_death_chance - min_death_chance) * ((i - zero_death_threshold) / (rows - zero_death_threshold)))
+            for i in range(rows)
         }
+    
+        print(death_chance)
 
         # move all embers up by one
         for j in ember_locations:
             if ember_locations[j] >= 0:
                 ember_locations[j] += 1
 
-                if ember_locations[j] > len(fireplace_matrix):
+                if ember_locations[j] >= rows:
                     ember_locations[j] = -1
 
             if blember_locations[j] >= 0:
                 blember_locations[j] += 1
                 
-                if blember_locations[j] > len(fireplace_matrix):
-                    ember_locations[j] = -1
-        
-        for i, row in enumerate((fireplace_matrix)):
+                if blember_locations[j] >= rows:
+                    blember_locations[j] = -1
+
+        for i, row in enumerate(fireplace_matrix):
             for j, pixel in enumerate(row):
                 
                 if i == 0 and random.random() < 0.02:
@@ -75,7 +65,7 @@ class Fireplace:
                 if bound_delta > 0:
                     # Determine whether to kill using death chances
                     modifier = 0.1 if pixel_states.get(j - 1) == 2 else 0
-                    to_kill = random.random() < death_chance[int(bound_delta)] + modifier
+                    to_kill = random.random() < death_chance.get(int(bound_delta), 0.5) + modifier
                     
                     # Each pixel has a chance of flickering (being black)
                     to_flicker = random.random() < 0.02
@@ -106,9 +96,9 @@ class Fireplace:
         '''
         Generates the pixel color of the fire, with a different probability depending on region
             
-            - bound_delta: distance between pixel and upper bound of the fire
+        - bound_delta: distance between pixel and upper bound of the fire
         
-        Returns a tuple of three integers in representing the RGB color of pixels
+        Returns a tuple of three integers representing the RGB color of pixels
         '''
         # possible pixel colors
         colors = deque(palette)
@@ -137,14 +127,15 @@ class Fireplace:
 
 
 class FireplaceIterator:
-    def __init__(self, fireplace: Fireplace):
+    def __init__(self, fireplace: Fireplace, rows: int = 18, cols: int = 25):
         self.fireplace = fireplace
-        fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
-        self.ember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
-        self.blember_locations = {j : -1 for j in range(len(fireplace_matrix[0]))}
-
+        self.rows = rows
+        self.cols = cols
+        self.fireplace_matrix = [[(0, 0, 0) for _ in range(cols)] for _ in range(rows)]
+        self.ember_locations = {j: -1 for j in range(cols)}
+        self.blember_locations = {j: -1 for j in range(cols)}
 
     def __next__(self):
-        fireplace_matrix = [[(0,0,0) for i in range(25)] for i in range(18)]
-        fireplace_frame, self.ember_locations, self.blember_locations = self.fireplace.generate_fireplace_frame(fireplace_matrix, self.ember_locations, self.blember_locations)
+        self.fireplace_matrix = [[(0, 0, 0) for _ in range(self.cols)] for _ in range(self.rows)]
+        fireplace_frame, self.ember_locations, self.blember_locations = self.fireplace.generate_fireplace_frame(self.fireplace_matrix, self.ember_locations, self.blember_locations)
         return self.fireplace.generate_frame_image(fireplace_frame)
