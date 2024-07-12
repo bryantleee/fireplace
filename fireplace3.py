@@ -17,7 +17,7 @@ class Fireplace:
     def calculate_death_thresholds(self):
         # minimum and maximum death chances
         min_death_chance = 0.02
-        max_death_chance = 0.45
+        max_death_chance = 0.55
 
         # threshold for zero death chance (e.g., top third of the fire)
         zero_death_threshold = self.rows // 2
@@ -69,7 +69,7 @@ class Fireplace:
             to_kill = random.random() < self.death_chance.get(int(bound_delta), 0.5) + modifier
             
             # Each pixel has a chance of flickering (being black)
-            to_flicker = random.random() < 0.02
+            to_flicker = random.random() < 0.03
 
             # Pixel is valid under certain conditions
             if i <= bound and not to_kill and pixel_states.get(j) != 2 and not to_flicker and not blember_locations[j] == i:
@@ -84,7 +84,7 @@ class Fireplace:
                 pixel_states[j] = 1 if random.random() < 0.3 else 2
 
                 # sometimes a killed fire can make an ember
-                if pixel_states[j] == 2 and ember_locations[j] == -1 and random.random() < 0.3:
+                if pixel_states[j] == 2 and ember_locations[j] == -1 and random.random() < 0.25:
                     fireplace_matrix[i][j] = self.ember_color
                     ember_locations[j] = i
     
@@ -120,7 +120,7 @@ class Fireplace:
 
     def generate_frame_image(self, fireplace_frame):
         '''
-        Generate image
+        Generate image array representation of the fireplace
         '''    
         array = np.array(fireplace_frame[::-1], dtype=np.uint8)
         # new_image = Image.fromarray(array)
