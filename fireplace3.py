@@ -16,8 +16,8 @@ class Fireplace:
         
     def calculate_death_thresholds(self):
         # minimum and maximum death chances
-        min_death_chance = 0.05
-        max_death_chance = 0.7
+        min_death_chance = 0.02
+        max_death_chance = 0.45
 
         # threshold for zero death chance (e.g., top third of the fire)
         zero_death_threshold = self.rows // 2
@@ -31,18 +31,13 @@ class Fireplace:
         
     
     def generate_fireplace_frame(self, fireplace_matrix: List[List[Tuple[int]]], 
-        ember_locations: Dict, blember_locations: Dict, palette=((251, 237, 83),(248, 221, 78), 
-                        (246, 201, 73), (244, 183, 68), (255, 159, 56), (241, 146, 63))) -> List[List[Tuple[int]]]:
+        ember_locations: Dict, blember_locations: Dict) -> List[List[Tuple[int]]]:
         '''
         Generates a single frame of a fireplace, with each Tuple representing an RGB pixel color
         '''
-        rows = len(fireplace_matrix)
-        cols = len(fireplace_matrix[0])
-        pixel_states = {j: 0 for j in range(cols)}
-        
-        # formula to determine fire max height
-        y = lambda x: -1 / cols * ((x - (cols / 2)) ** 2) + (rows / 1.5)
 
+        pixel_states = {j: 0 for j in range(self.cols)}
+        
         self.update_embers(ember_locations, blember_locations)
 
         for i, row in enumerate(fireplace_matrix):
@@ -51,38 +46,47 @@ class Fireplace:
                 if i == 0 and random.random() < 0.02:
                     blember_locations[j] = 0
 
-                # max pixel height
-                bound = y(j)
-                bound_delta = bound - i
-
-                if bound_delta > 0:
-                    # Determine whether to kill using death chances
-                    modifier = 0.1 if pixel_states.get(j - 1) == 2 else 0
-                    to_kill = random.random() < self.death_chance.get(int(bound_delta), 0.5) + modifier
-                    
-                    # Each pixel has a chance of flickering (being black)
-                    to_flicker = random.random() < 0.02
-
-                    # Pixel is valid under certain conditions
-                    if i <= bound and not to_kill and pixel_states.get(j) != 2 and not to_flicker and not blember_locations[j] == i:
-                        fireplace_matrix[i][j] = self.generate_pixel_color(bound_delta, palette)
-                    
-                    # only allow for one-pixel wide fire gaps
-                    if pixel_states.get(j) == 1:
-                        pixel_states[j] = 2
-
-                    elif to_kill and pixel_states.get(j) != 2:
-                        # randomly determine if we allow for a pixel gap
-                        pixel_states[j] = 1 if random.random() < 0.3 else 2
-
-                        # sometimes a killed fire can make an ember
-                        if pixel_states[j] == 2 and ember_locations[j] == -1 and random.random() < 0.4:
-                            fireplace_matrix[i][j] = self.ember_color
-                            ember_locations[j] = i
+                self.update_pixels(pixel_states, i, j, fireplace_matrix, blember_locations, ember_locations)
 
                 if ember_locations[j] == i:
                     fireplace_matrix[i][j] = self.ember_color
         return fireplace_matrix, ember_locations, blember_locations
+    
+    
+    def calculate_max_fire_height(self, x: int) -> int:
+        # formula to determine fire max height, shape of a parabola
+        return -1 / self.cols * ((x - (self.cols / 2)) ** 2) + (self.rows / 1.5)
+        
+    
+    def update_pixels(self, pixel_states, i, j, fireplace_matrix, blember_locations, ember_locations):
+        # max pixel height
+        bound = self.calculate_max_fire_height(j)
+        bound_delta = bound - i
+
+        if bound_delta > 0:
+            # Determine whether to kill using death chances
+            modifier = 0.1 if pixel_states.get(j - 1) == 2 else 0
+            to_kill = random.random() < self.death_chance.get(int(bound_delta), 0.5) + modifier
+            
+            # Each pixel has a chance of flickering (being black)
+            to_flicker = random.random() < 0.02
+
+            # Pixel is valid under certain conditions
+            if i <= bound and not to_kill and pixel_states.get(j) != 2 and not to_flicker and not blember_locations[j] == i:
+                fireplace_matrix[i][j] = self.generate_pixel_color(bound_delta, self.palette)
+            
+            # only allow for one-pixel wide fire gaps
+            if pixel_states.get(j) == 1:
+                pixel_states[j] = 2
+
+            elif to_kill and pixel_states.get(j) != 2:
+                # randomly determine if we allow for a pixel gap
+                pixel_states[j] = 1 if random.random() < 0.3 else 2
+
+                # sometimes a killed fire can make an ember
+                if pixel_states[j] == 2 and ember_locations[j] == -1 and random.random() < 0.3:
+                    fireplace_matrix[i][j] = self.ember_color
+                    ember_locations[j] = i
     
     
     def update_embers(self, ember_locations: Dict[int, int], blember_locations: Dict[int, int]) -> None:
