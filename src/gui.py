@@ -2,7 +2,7 @@
 import tkinter as tk
 from PIL import ImageTk, Image
 
-import fireplace
+import src.fireplace as fireplace
 
 win = tk.Tk()
 win.title('fireplace')
