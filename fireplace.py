@@ -34,8 +34,6 @@ class Fireplace:
             i: 0 if i > zero_death_threshold else abs(min_death_chance + (max_death_chance - min_death_chance) * ((i - zero_death_threshold) / (rows - zero_death_threshold)))
             for i in range(rows)
         }
-    
-        print(death_chance)
 
         # move all embers up by one
         for j in ember_locations:
