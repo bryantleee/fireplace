@@ -73,7 +73,7 @@ class Fireplace:
 
             # Pixel is valid under certain conditions
             if i <= bound and not to_kill and pixel_states.get(j) != 2 and not to_flicker and not blember_locations[j] == i:
-                fireplace_matrix[i][j] = self.generate_pixel_color(bound_delta, self.palette)
+                fireplace_matrix[i][j] = self.generate_pixel_color(bound_delta)
             
             # only allow for one-pixel wide fire gaps
             if pixel_states.get(j) == 1:
@@ -101,7 +101,7 @@ class Fireplace:
                     blember_locations[j] = -1
 
     
-    def generate_pixel_color(self, bound_delta: float, palette) -> Tuple[int]:
+    def generate_pixel_color(self, bound_delta: float) -> Tuple[int]:
         '''
         Generates the pixel color of the fire, with a different probability depending on region
             
@@ -110,7 +110,7 @@ class Fireplace:
         Returns a tuple of three integers representing the RGB color of pixels
         '''
         # possible pixel colors
-        colors = deque(palette)
+        colors = deque(self.palette)
         weights = (50, 25, 15, 10, 0, 0)
 
         # change probabilities depending on distance to the upper bound
